@@ -1,6 +1,7 @@
-HTML Based instrument Display.
+#HomeGrown Marine: Instrument Display
+HTML based instrument display - turn your phone or tablet into another display.
 
-Runs as a module in https://github.com/HomegrownMarine/boat_computer.  HTML based instrument display will call to the server at 10Hz, looking for new data and displaying it.
+__Runs as a module in https://github.com/HomegrownMarine/boat_computer.__
 
 currently 2 displays, with more to come:
 

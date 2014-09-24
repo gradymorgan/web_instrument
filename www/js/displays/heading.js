@@ -18,11 +18,11 @@ var headingDisplay = Backbone.View.extend({
         var now = new Date().getTime();
 
         if (now - this.lastRender > 200) {
-            var displayVal = this.model.get('hdg');
+            var displayVal = this.model.get('heel');
             this.$('.value').text(displayVal.toFixed(1));
             this.lastRender = now;
         }
-        this.drawTicker();
+        //this.drawTicker();
         
         return this;
     },
