@@ -9,6 +9,8 @@ var vmgDisplay = Backbone.View.extend({
         this.listenTo(this.model, "change", this.render);
         this.lastRender = 0;
         this.$el.html(this.template);
+
+        this.points = [];
     },
 
     render: function() {
@@ -31,7 +33,6 @@ var vmgDisplay = Backbone.View.extend({
             .attr("height", height)
           .append("g")
             .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-            // .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(2)translate(-"+ width / 4 + ",-" + height / 4 + ")");
 
 
         var gr = this.axis_circles = svg.append("g")
@@ -68,8 +69,6 @@ var vmgDisplay = Backbone.View.extend({
             .text(function(d) { return -1*((d+90)%360 -180) + "°"; });
         
 
-        var points = [[40, 6]];
-
         function rad(deg) {
             return deg * Math.PI / 180;
         }
@@ -86,7 +85,7 @@ var vmgDisplay = Backbone.View.extend({
 
         var dots = this.dots = svg.append('g')
             .selectAll('circle.st')
-            .data(points)
+            .data([])
             .enter().append('circle')
                 .attr('class', 'st')
                 .attr('r', '3')
@@ -94,8 +93,8 @@ var vmgDisplay = Backbone.View.extend({
                 .attr('cy', function(d) { return y(d) })
 
 
-        svg.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(2)translate(-"+ width / 4 + "," + height / 4 + ")");
-
+        // this.showQuadrant('U-S');
+        this.showPerformance([[40, 6]])
         // draw circles for boat speeds, in halfs at most, should be dynamic
         // draw lines for angles
         // draw old points
@@ -124,16 +123,31 @@ var vmgDisplay = Backbone.View.extend({
             signX = signY = '-';
 
         this.canvas.transition()
-            .attr("transform", "translate(" + halfWidth + "," + halfHeight + ")scale(2)translate("+ signX + quarterWidth + "," + signY + quarterHeight + ")");
+            .attr("transform", "translate(" + halfWidth + "," + halfHeight + ")scale(1.9)translate("+ signX + quarterWidth + "," + signY + quarterHeight + ")");
+    },
+
+    update: function(dataPoint) {
+        if ( !this.workingPoint )
+            this.workingPoint = {};
+
+        _.extend(this.workingPoint, _.pick(dataPoint, ["twa","speed"]));
+
+        if ( _.has(this.workingPoint, 'twa') && _.has(this.workingPoint, 'speed') ) {
+            this.points.push(this.workingPoint);
+            this.workingPoint = {};
+
+            this.showPerformance();
+        }
     },
 
     setSpeeds: function(speeds) {
-
+        this.r.domain(d3.extent(speeds));
+        this.axis_circles.data(speeds);
     },
 
-    showPerformance: function() {
+    drawPerformance: function() {
         this.dots 
-            .data(points)
+            .data(points);
     },
 
     drawInstrument: function() {
