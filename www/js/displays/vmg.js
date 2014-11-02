@@ -24,9 +24,21 @@ var vmgDisplay = Backbone.View.extend({
         var angles = d3.range(0, 360, 30);      
         var speeds = d3.range(0, 9, 1)
 
-        var r = this.r = d3.scale.linear()
+        var r = d3.scale.linear()
             .domain([0, 8])
             .range([0, radius]);
+
+        function rad(deg) {
+            return deg * Math.PI / 180;
+        }
+
+        function x(d) {
+            return r(d[1]) * Math.cos( rad(d[0]-90) );
+        }
+
+        function y(d) {
+            return r(d[1]) * Math.sin( rad(d[0]-90) );
+        }
 
         var svg = this.canvas = d3.select("body").append("svg")
             .attr("width", width)
@@ -50,7 +62,6 @@ var vmgDisplay = Backbone.View.extend({
             .style("text-anchor", "middle")
             .text(function(d) { return d; });
 
-
         var ga = this.axis_lines = svg.append("g")
             .attr("class", "a axis")
           .selectAll("g")
@@ -69,61 +80,72 @@ var vmgDisplay = Backbone.View.extend({
             .text(function(d) { return -1*((d+90)%360 -180) + "°"; });
         
 
-        function rad(deg) {
-            return deg * Math.PI / 180;
-        }
-
-        var x = this.x = function(d) {
-            return r(d[1]) * Math.cos((d[0]-90) * Math.PI / 180 );
-        }
-
-        var y = this.y = function(d) {
-            return r(d[1]) * Math.sin((d[0]-90) * Math.PI / 180 );
-        }
+        
 
         console.info('radius', radius, r(6));
 
         var dots = this.dots = svg.append('g')
-            .selectAll('circle.st')
-            .data([])
+            
+            dots.selectAll('circle.st')
+            .data([], function(d) { return d })
             .enter().append('circle')
                 .attr('class', 'st')
                 .attr('r', '3')
                 .attr('cx', function(d) { return x(d) })
                 .attr('cy', function(d) { return y(d) })
 
+        
+        _.extend(this, {
+            showAll: function() {
+                this.canvas.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+            },
+            showQuadrant: function(quadrant) {
+
+                var halfWidth = this.width / 2;
+                var halfHeight = this.height / 2;
+
+                var quarterWidth = this.width / 4;
+                var quarterHeight = this.height / 4;
+
+                var signX = '', signY = '';
+                if ( quadrant == "U-S" ) 
+                    signX = '-';
+                else if ( quadrant == "D-P" ) 
+                    signY = '-';
+                else if ( quadrant == "D-S" )
+                    signX = signY = '-';
+
+                this.canvas.transition()
+                    .attr("transform", "translate(" + halfWidth + "," + halfHeight + ")scale(1.9)translate("+ signX + quarterWidth + "," + signY + quarterHeight + ")");
+            },
+            drawPerformance: function() {
+                var totalPoints = this.points.length;
+                var dd = dots.selectAll('circle.st')
+                                .data(this.points, function(d) { return d });
+
+                                dd.enter().append('circle')
+                                    .attr('class', 'st')
+                                    .attr('r', '3')
+                                    .attr('cx', function(d) { return x(d) })
+                                    .attr('cy', function(d) { return y(d) })
+                                dd.exit().remove()
+                                    
+                dd.style('fill', function(d,i) { var c = 127*((totalPoints-i)/(totalPoints));
+                                                                    return d3.rgb(c,c, 255) })
+
+                this.showQuadrant(this.quadrantForPoint(this.points[totalPoints-1]));
+            }
+        });
 
         // this.showQuadrant('U-S');
-        this.showPerformance([[40, 6]])
+        // this.drawPerformance()
+
         // draw circles for boat speeds, in halfs at most, should be dynamic
         // draw lines for angles
         // draw old points
         // draw latest point
 
         // 
-    },
-
-    showAll: function() {
-        this.canvas.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-    },
-    showQuadrant: function(quadrant) {
-
-        var halfWidth = this.width / 2;
-        var halfHeight = this.height / 2;
-
-        var quarterWidth = this.width / 4;
-        var quarterHeight = this.height / 4;
-
-        var signX = '', signY = '';
-        if ( quadrant == "U-S" ) 
-            signX = '-';
-        else if ( quadrant == "D-P" ) 
-            signY = '-';
-        else if ( quadrant == "D-S" )
-            signX = signY = '-';
-
-        this.canvas.transition()
-            .attr("transform", "translate(" + halfWidth + "," + halfHeight + ")scale(1.9)translate("+ signX + quarterWidth + "," + signY + quarterHeight + ")");
     },
 
     update: function(dataPoint) {
@@ -133,22 +155,30 @@ var vmgDisplay = Backbone.View.extend({
         _.extend(this.workingPoint, _.pick(dataPoint, ["twa","speed"]));
 
         if ( _.has(this.workingPoint, 'twa') && _.has(this.workingPoint, 'speed') ) {
-            this.points.push(this.workingPoint);
+            //normalize point
+            var point = [this.workingPoint.twa, this.workingPoint.speed];
+
+            this.points.push(point);
             this.workingPoint = {};
 
-            this.showPerformance();
+            this.drawPerformance();
         }
     },
 
-    setSpeeds: function(speeds) {
-        this.r.domain(d3.extent(speeds));
-        this.axis_circles.data(speeds);
+    quadrantForPoint: function(point) {
+        var quadrant = [];
+        quadrant.push( ( Math.abs(point[0]) >= 90 )?'D':'U');
+        quadrant.push( ( point[0] >= 0 )?'S':'P');
+
+        return quadrant.join('-');
     },
 
-    drawPerformance: function() {
-        this.dots 
-            .data(points);
-    },
+    // setSpeeds: function(speeds) {
+    //     this.r.domain(d3.extent(speeds));
+    //     this.axis_circles.data(speeds);
+    // },
+
+    
 
     drawInstrument: function() {
 

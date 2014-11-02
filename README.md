@@ -14,3 +14,6 @@ Speed: with graphic acceleration bar.
 - in app configuration of screens and refresh rate (currently 10Hz)
 - generic screen for any data
 
+- Ability to zoom out VMG
+- copy stbd to port and vice versa
+- better fadeout of old points.
