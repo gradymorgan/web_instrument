@@ -92,13 +92,13 @@
                 var state = Backbone.Model.extend({});
                 var data = new state({'heel': 123.0, 'speed':5.6});
 
-                // window.hdgDisplay = new headingDisplay({model: data});
-                // $('#screen').append(hdgDisplay.el);
-                // hdgDisplay.render();
+                window.hdgDisplay = new headingDisplay({model: data});
+                $('#screen').append(hdgDisplay.el);
+                hdgDisplay.render();
 
-                window.vmgDisplay = new vmgDisplay({model: data});
-                $('#screen').append(vmgDisplay.el);
-                vmgDisplay.render();
+                // window.vmgDisplay = new vmgDisplay({model: data});
+                // $('#screen').append(vmgDisplay.el);
+                // vmgDisplay.render();
 
                 startListening(data);
             });

@@ -17,3 +17,8 @@ Speed: with graphic acceleration bar.
 - Ability to zoom out VMG
 - copy stbd to port and vice versa
 - better fadeout of old points.
+
+- use kindle as screen
+-- http://spectrum.ieee.org/geek-life/hands-on/build-a-readable-bicycle-computer
+-- http://sirlagz.net/2012/08/09/how-to-use-the-raspberry-pi-as-a-wireless-access-pointrouter-part-1/
+-- http://www.mobileread.mobi/forums/showthread.php?t=188439
