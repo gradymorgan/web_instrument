@@ -48,12 +48,30 @@
         <script src="/lib/underscore.js"></script>
         <script src="/lib/backbone.js"></script>
         <script src="/lib/d3.js"></script>
+        <script src="/lib/sprintf.js"></script>
 
-        <script src="js/displays/heading.js"></script>
+        <script src="js/displays/screen.js"></script>
         <script src="js/displays/speed.js"></script>
         <script src="js/displays/vmg.js"></script>
 
         <script>
+            var metricConfigs = {
+                'hdg': { 'label': 'hdg', 'unit': '°', 'format': '%.1f' },
+                'heel': { 'label': 'hl', 'unit': '°', 'format': '%.1f' },
+                'pitch': { 'label': 'pch', 'unit': '°', 'format': '%.1f' },
+                'speed': { 'label': 'spd', 'unit': 'kts', 'format': '%.2f' }
+            };
+
+            function screenFactory(metric, model) {
+                var options = _.extend({'model': model, 'metric': metric}, metricConfigs[metric]);
+
+                var display = new genericScreen(options);
+                $('#screen').append(display.el);
+                display.render();
+
+                return display;
+            }
+
             var timer = null;
             function stop() {
                 if (timer) {
@@ -63,42 +81,44 @@
             }
 
             function startListening(model) {
-       //          window.model = model;
-       //          //TODO: backoff if results stop comming back
-       //          timer = setInterval(function() {
-       //              $.ajax({
-       //                  dataType: "json",
-       //                  url: '/now',
-       //                  cache: false,
-       //                  success: function(d) { 
-       //                      model.set('hdg', d.hdg);
-       //                      model.set('heel', d.heel);
-			    // hdgDisplay.render();
-       //                  }
-       //              });
-       //          }, 1000);
+                window.model = model;
+
+                //TODO: backoff if results stop comming back
+                timer = setInterval(function() {
+                    $.ajax({
+                        dataType: "json",
+                        url: '/now',
+                        cache: false,
+                        success: function(d) { 
+                            _.each(['hdg', 'heel', 'pitch'], function(metric) {
+                                if (metric in d) {
+                                    model.set(metric, d[metric]);
+                                }
+                            });
+                        }
+                    });
+                }, 1000);
 
 
-                var source = new EventSource('/stream');
-                source.addEventListener('message', function(e) {
-                    var data = JSON.parse(e.data);
+                // var source = new EventSource('/stream');
+                // source.addEventListener('message', function(e) {
+                //     var data = JSON.parse(e.data);
                     
-                    window.vmgDisplay.update(data)
+                //     console.info(data);
+                //     window.hdgDisplay.render(data);
+                //     // window.vmgDisplay.update(data)
 
-                }, false);
+                // }, false);
             }
 
             $(function() {
                 var state = Backbone.Model.extend({});
-                var data = new state({'heel': 123.0, 'speed':5.6});
+                var data = new state({'hdg': 123.0, 'heel': 1.3, 'speed':5.6});
 
-                window.hdgDisplay = new headingDisplay({model: data});
-                $('#screen').append(hdgDisplay.el);
-                hdgDisplay.render();
-
-                // window.vmgDisplay = new vmgDisplay({model: data});
-                // $('#screen').append(vmgDisplay.el);
-                // vmgDisplay.render();
+                _.each(['hdg', 'heel', 'pitch'], function(metric) {
+                    screenFactory(metric, data);
+                });
+                
 
                 startListening(data);
             });
