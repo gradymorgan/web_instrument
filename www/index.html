@@ -83,32 +83,32 @@
             function startListening(model) {
                 window.model = model;
 
-                //TODO: backoff if results stop comming back
-                timer = setInterval(function() {
-                    $.ajax({
-                        dataType: "json",
-                        url: '/now',
-                        cache: false,
-                        success: function(d) { 
-                            _.each(['hdg', 'heel', 'pitch'], function(metric) {
-                                if (metric in d) {
-                                    model.set(metric, d[metric]);
-                                }
-                            });
+                // //TODO: backoff if results stop comming back
+                // timer = setInterval(function() {
+                //     $.ajax({
+                //         dataType: "json",
+                //         url: '/now',
+                //         cache: false,
+                //         success: function(d) { 
+                //             _.each(['hdg', 'heel', 'pitch'], function(metric) {
+                //                 if (metric in d) {
+                //                     model.set(metric, d[metric]);
+                //                 }
+                //             });
+                //         }
+                //     });
+                // }, 1000);
+
+
+                var source = new EventSource('/stream');
+                source.addEventListener('message', function(e) {
+                    var d = JSON.parse(e.data);
+                    _.each(['hdg', 'heel', 'pitch'], function(metric) {
+                        if (metric in d) {
+                            model.set(metric, d[metric]);
                         }
                     });
-                }, 1000);
-
-
-                // var source = new EventSource('/stream');
-                // source.addEventListener('message', function(e) {
-                //     var data = JSON.parse(e.data);
-                    
-                //     console.info(data);
-                //     window.hdgDisplay.render(data);
-                //     // window.vmgDisplay.update(data)
-
-                // }, false);
+                }, false);
             }
 
             $(function() {

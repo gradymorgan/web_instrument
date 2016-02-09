@@ -3,12 +3,15 @@ HTML based instrument display - turn your phone or tablet into another display.
 
 __Runs as a module in https://github.com/HomegrownMarine/boat_computer.__
 
-currently 2 displays, with more to come:
-
-Heading: with graphic display to help visualize small changes in heading.
-Speed: with graphic acceleration bar.
+- shows instrument data on phone or tablet.
 
 ![](https://raw.githubusercontent.com/HomegrownMarine/web_instrument/master/README/simple_example.png)
+
+<video controls="controls">
+  <source type="video/mp4" src="https://raw.githubusercontent.com/HomegrownMarine/web_instrument/master/README/kindle.mov"></source>
+  <p>Your browser does not support the video element.</p>
+</video>
+Showing heading, heel, and pitch on kindle with https://github.com/HomegrownMarine/attitude app.
 
 ###TODO: 
 - in app configuration of screens and refresh rate (currently 10Hz)
